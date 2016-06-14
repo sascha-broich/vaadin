@@ -28,12 +28,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.FileUpload;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.Hidden;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.*;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.VConsole;
@@ -94,7 +89,7 @@ public class VUpload extends SimplePanel {
      * <p>
      * For internal use only. May be removed or replaced in the future.
      */
-    public final VButton submitButton;
+    public final VNativeButton submitButton;
 
     /**
      * When expecting big files, programmer may initiate some UI changes when
@@ -136,7 +131,7 @@ public class VUpload extends SimplePanel {
         setWidget(panel);
         panel.add(maxfilesize);
         panel.add(fu);
-        submitButton = new VButton();
+        submitButton = new VNativeButton();
         submitButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {

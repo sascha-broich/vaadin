@@ -23,17 +23,10 @@ import java.util.Queue;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Command;
@@ -44,12 +37,7 @@ import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.BrowserInfo;
-import com.vaadin.client.LayoutManager;
-import com.vaadin.client.TooltipInfo;
-import com.vaadin.client.UIDL;
-import com.vaadin.client.Util;
+import com.vaadin.client.*;
 import com.vaadin.shared.ui.menubar.MenuBarConstants;
 
 public class VMenuBar extends SimpleFocusablePanel implements
@@ -146,7 +134,7 @@ public class VMenuBar extends SimpleFocusablePanel implements
         containerElement = getElement();
 
         sinkEvents(Event.ONCLICK | Event.ONMOUSEOVER | Event.ONMOUSEOUT
-                | Event.ONLOAD);
+                | Event.ONCONTEXTMENU | Event.ONLOAD);
 
         if (parentMenu == null) {
             // Root menu
@@ -384,8 +372,11 @@ public class VMenuBar extends SimpleFocusablePanel implements
             switch (DOM.eventGetType(e)) {
 
             case Event.ONCLICK:
+            case Event.ONCONTEXTMENU:
                 if (isEnabled() && targetItem.isEnabled()) {
-                    itemClick(targetItem);
+                    itemClick(targetItem,
+                            e.getButton() == NativeEvent.BUTTON_LEFT);
+
                 }
                 if (subMenu) {
                     // Prevent moving keyboard focus to child menus
@@ -395,7 +386,8 @@ public class VMenuBar extends SimpleFocusablePanel implements
                     }
                     parent.setFocus(true);
                 }
-
+                e.preventDefault();
+                e.stopPropagation();
                 break;
 
             case Event.ONMOUSEOVER:
@@ -434,8 +426,10 @@ public class VMenuBar extends SimpleFocusablePanel implements
      * 
      * @param item
      */
-    public void itemClick(CustomMenuItem item) {
-        if (item.getCommand() != null) {
+    public void itemClick(CustomMenuItem item, boolean leftMouseButton) {
+        boolean hasSubmenu = item.getSubMenu() != null
+                && item.getSubMenu() != visibleChildMenu;
+        if ((item.getCommand() != null) && (leftMouseButton || !hasSubmenu)) {
             setSelected(null);
 
             if (visibleChildMenu != null) {
@@ -447,8 +441,7 @@ public class VMenuBar extends SimpleFocusablePanel implements
             Scheduler.get().scheduleDeferred(item.getCommand());
 
         } else {
-            if (item.getSubMenu() != null
-                    && item.getSubMenu() != visibleChildMenu) {
+            if (hasSubmenu) {
                 setSelected(item);
                 showChildMenu(item);
                 menuVisible = true;

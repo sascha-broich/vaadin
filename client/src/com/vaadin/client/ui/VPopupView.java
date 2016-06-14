@@ -23,27 +23,20 @@ import java.util.Set;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.ComponentConnector;
-import com.vaadin.client.DeferredWorker;
-import com.vaadin.client.Util;
-import com.vaadin.client.VCaptionWrapper;
-import com.vaadin.client.VConsole;
+import com.google.gwt.user.client.ui.Focusable;
+import com.vaadin.client.*;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.ShortcutActionHandler.ShortcutActionHandlerOwner;
 import com.vaadin.client.ui.popupview.VisibilityChangeEvent;
 import com.vaadin.client.ui.popupview.VisibilityChangeHandler;
+import com.vaadin.shared.ui.popupview.PopupPosition;
 
 public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
         DeferredWorker {
@@ -73,6 +66,7 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
 
     private boolean popupShowInProgress;
     private boolean enabled = true;
+    private PopupPosition popupPosition = PopupPosition.CENTER;
 
     /**
      * loading constructor
@@ -92,7 +86,7 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
         addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                if(isEnabled()) {
+                if (isEnabled()) {
                     preparePopup(popup);
                     showPopup(popup);
                     center();
@@ -147,13 +141,38 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
         int offsetWidth = popup.getOffsetWidth();
         int offsetHeight = popup.getOffsetHeight();
 
-        int hostHorizontalCenter = VPopupView.this.getAbsoluteLeft()
-                + VPopupView.this.getOffsetWidth() / 2;
-        int hostVerticalCenter = VPopupView.this.getAbsoluteTop()
-                + VPopupView.this.getOffsetHeight() / 2;
+        int left = 0;
+        int top = 0;
 
-        int left = hostHorizontalCenter - offsetWidth / 2;
-        int top = hostVerticalCenter - offsetHeight / 2;
+        switch (popupPosition) {
+        case CENTER: {
+            int hostHorizontalCenter = VPopupView.this.getAbsoluteLeft()
+                    + VPopupView.this.getOffsetWidth() / 2;
+            int hostVerticalCenter = VPopupView.this.getAbsoluteTop()
+                    + VPopupView.this.getOffsetHeight() / 2;
+
+            left = hostHorizontalCenter - offsetWidth / 2;
+            top = hostVerticalCenter - offsetHeight / 2;
+        }
+            break;
+        case COVER: {
+            left = VPopupView.this.getAbsoluteLeft();
+            top = VPopupView.this.getAbsoluteTop();
+        }
+            break;
+        case BELOW: {
+            left = VPopupView.this.getAbsoluteLeft();
+            top = VPopupView.this.getAbsoluteTop()
+                    + VPopupView.this.getOffsetHeight();
+        }
+            break;
+        case RIGHT: {
+            left = VPopupView.this.getAbsoluteLeft()
+                    + VPopupView.this.getOffsetWidth();
+            top = VPopupView.this.getAbsoluteTop();
+        }
+            break;
+        }
 
         // Don't show the popup outside the screen.
         if ((left + offsetWidth) > windowRight) {
@@ -195,7 +214,7 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
 
     /**
      * Returns true if the popup is enabled, false if not.
-     *
+     * 
      * @since 7.3.4
      */
     @Override
@@ -205,9 +224,10 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
 
     /**
      * Sets whether this popup is enabled.
-     *
-     * @param enabled <code>true</code> to enable the popup, <code>false</code>
-     *          to disable it
+     * 
+     * @param enabled
+     *            <code>true</code> to enable the popup, <code>false</code> to
+     *            disable it
      * @since 7.3.4
      */
     @Override
@@ -400,7 +420,6 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
                 popupComponentConnector.addStateChangeHandler("height", this);
                 popupComponentConnector.addStateChangeHandler("width", this);
             }
-
         }
 
         public void setHideOnMouseOut(boolean hideOnMouseOut) {
@@ -429,6 +448,12 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
             }
             return handler;
         }
+
+        @Override
+        public void positionOrSizeUpdated() {
+            VPopupView.this.center();
+            super.positionOrSizeUpdated();
+        }
     }// class CustomPopup
 
     public HandlerRegistration addVisibilityChangeHandler(
@@ -442,9 +467,30 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
         return Collections.singleton((Widget) popup).iterator();
     }
 
+    /**
+     * Checks whether there are operations pending for this widget that must be
+     * executed before reaching a steady state.
+     * 
+     * @returns <code>true</code> iff there are operations pending which must be
+     *          executed before reaching a steady state
+     * @since 7.3.4
+     */
     @Override
     public boolean isWorkPending() {
         return popupShowInProgress;
+    }
+
+    public PopupPosition getPopupPosition() {
+        return popupPosition;
+    }
+
+    public void setPopupPosition(PopupPosition popupPosition) {
+        if (popupPosition == null) {
+            this.popupPosition = PopupPosition.CENTER;
+        } else {
+            this.popupPosition = popupPosition;
+        }
+
     }
 
 }// class VPopupView

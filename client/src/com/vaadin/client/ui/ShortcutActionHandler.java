@@ -27,11 +27,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.KeyboardListener;
 import com.google.gwt.user.client.ui.KeyboardListenerCollection;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.BrowserInfo;
-import com.vaadin.client.ComponentConnector;
-import com.vaadin.client.UIDL;
-import com.vaadin.client.Util;
+import com.vaadin.client.*;
 
 /**
  * A helper class to implement keyboard shorcut handling. Keeps a list of owners
@@ -152,6 +148,7 @@ public class ShortcutActionHandler {
         final ComponentConnector finalTarget = target;
 
         event.preventDefault();
+        event.stopPropagation();
 
         /*
          * The target component might have unpublished changes, try to

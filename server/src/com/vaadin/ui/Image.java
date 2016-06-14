@@ -98,6 +98,7 @@ public class Image extends AbstractEmbedded {
     public void addClickListener(ClickListener listener) {
         addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
                 ClickListener.clickMethod);
+        getState().hasClickListener = true;
     }
 
     /**
@@ -119,5 +120,6 @@ public class Image extends AbstractEmbedded {
     public void removeClickListener(ClickListener listener) {
         removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
                 listener);
+        getState().hasClickListener = false;
     }
 }

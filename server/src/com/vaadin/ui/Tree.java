@@ -774,6 +774,10 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
                     target.addAttribute(TreeConstants.ATTRIBUTE_ACTION_ICON,
                             a.getIcon());
                 }
+                if (a.getStyleName() != null) {
+                    target.addAttribute(TreeConstants.ATTRIBUTE_ACTION_STYLE,
+                            a.getStyleName());
+                }
                 target.addAttribute("key", actionMapper.key(a));
                 target.endTag("action");
             }

@@ -16,8 +16,9 @@
 package com.vaadin.client.ui.image;
 
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.LoadEvent;
-import com.google.gwt.event.dom.client.LoadHandler;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.AbstractComponentConnector;
 import com.vaadin.client.ui.ClickEventHandler;
@@ -30,6 +31,92 @@ import com.vaadin.shared.ui.image.ImageState;
 
 @Connect(com.vaadin.ui.Image.class)
 public class ImageConnector extends AbstractComponentConnector {
+
+    /**
+     * 
+     * @since
+     * @author Vaadin Ltd
+     */
+    private final class ImageClickEventHandler extends ClickEventHandler
+            implements MouseMoveHandler {
+
+        private HandlerRegistration mouseMoveHandlerRegistration;
+
+        /**
+         * @param connector
+         */
+        private ImageClickEventHandler(ComponentConnector connector) {
+            super(connector);
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see com.vaadin.client.ui.AbstractClickEventHandler#
+         * handleEventHandlerRegistration()
+         */
+        @Override
+        public void handleEventHandlerRegistration() {
+            super.handleEventHandlerRegistration();
+            if (hasEventListener()) {
+                if (mouseMoveHandlerRegistration == null) {
+                    mouseMoveHandlerRegistration = registerHandler(this,
+                            MouseMoveEvent.getType());
+                }
+            } else {
+                if (mouseMoveHandlerRegistration != null) {
+                    // Remove existing handlers
+                    mouseMoveHandlerRegistration.removeHandler();
+                }
+            }
+        }
+
+        @Override
+        protected void fireClick(NativeEvent event,
+                MouseEventDetails mouseDetails) {
+            getRpcProxy(ImageServerRpc.class).click(mouseDetails);
+        }
+
+        @Override
+        public void onMouseMove(MouseMoveEvent event) {
+            if (getState().hasClickListener) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see
+         * com.vaadin.client.ui.AbstractClickEventHandler#onMouseDown(com.google
+         * .gwt.event.dom.client.MouseDownEvent)
+         */
+        @Override
+        public void onMouseDown(MouseDownEvent event) {
+            super.onMouseDown(event);
+            if (getState().hasClickListener) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see
+         * com.vaadin.client.ui.AbstractClickEventHandler#onMouseUp(com.google
+         * .gwt.event.dom.client.MouseUpEvent)
+         */
+        @Override
+        public void onMouseUp(MouseUpEvent event) {
+            super.onMouseUp(event);
+            if (getState().hasClickListener) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+    }
 
     @Override
     protected void init() {
@@ -68,15 +155,6 @@ public class ImageConnector extends AbstractComponentConnector {
         getWidget().setAltText(alt != null ? alt : "");
     }
 
-    protected final ClickEventHandler clickEventHandler = new ClickEventHandler(
-            this) {
-
-        @Override
-        protected void fireClick(NativeEvent event,
-                MouseEventDetails mouseDetails) {
-            getRpcProxy(ImageServerRpc.class).click(mouseDetails);
-        }
-
-    };
-
+    protected final ClickEventHandler clickEventHandler = new ImageClickEventHandler(
+            this);
 }

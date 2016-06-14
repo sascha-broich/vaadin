@@ -16,13 +16,7 @@
 
 package com.vaadin.client.ui;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Scheduler;
@@ -31,44 +25,17 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.LoadEvent;
-import com.google.gwt.event.dom.client.LoadHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.HasDirection.Direction;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.*;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Widget;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.BrowserInfo;
-import com.vaadin.client.ComponentConnector;
-import com.vaadin.client.ComputedStyle;
-import com.vaadin.client.ConnectorMap;
+import com.vaadin.client.*;
 import com.vaadin.client.Focusable;
-import com.vaadin.client.UIDL;
-import com.vaadin.client.Util;
-import com.vaadin.client.VConsole;
 import com.vaadin.client.ui.aria.AriaHelper;
 import com.vaadin.client.ui.aria.HandlesAriaCaption;
 import com.vaadin.client.ui.aria.HandlesAriaInvalid;
@@ -1110,6 +1077,13 @@ public class VFilterSelect extends Composite implements Field, KeyDownHandler,
      * For internal use only. May be removed or replaced in the future.
      */
     public final TextBox tb;
+    private final Timer tbTimer = new Timer() {
+
+        @Override
+        public void run() {
+            runFilterAction();
+        }
+    };
 
     /** For internal use only. May be removed or replaced in the future. */
     public final SuggestionPopup suggestionPopup;
@@ -1699,6 +1673,8 @@ public class VFilterSelect extends Composite implements Field, KeyDownHandler,
         if (enableDebug) {
             debug("VFS: inputFieldKeyDown(" + event.getNativeKeyCode() + ")");
         }
+        tbTimer.cancel();
+
         switch (event.getNativeKeyCode()) {
         case KeyCodes.KEY_DOWN:
         case KeyCodes.KEY_UP:
@@ -1716,6 +1692,11 @@ public class VFilterSelect extends Composite implements Field, KeyDownHandler,
              * and enter is then pressed (see #7560).
              */
             if (!allowNewItem) {
+                if (isTextToFilter()) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                }
+                debug("VFS: inputFieldKeyDown: !allowNewItem");
                 return;
             }
 
@@ -1724,14 +1705,19 @@ public class VFilterSelect extends Composite implements Field, KeyDownHandler,
                             currentSuggestion.getReplacementString())) {
                 // Retain behavior from #6686 by returning without stopping
                 // propagation if there's nothing to do
+                debug("VFS: inputFieldKeyDown: currentSuggestion");
                 return;
             }
             suggestionPopup.menu.doSelectedItemAction();
 
             event.stopPropagation();
             break;
+        case KeyCodes.KEY_TAB:
+            if (allowNewItem && isTextToFilter()) {
+                suggestionPopup.menu.doSelectedItemAction();
+            }
+            break;
         }
-
     }
 
     /**
@@ -1846,9 +1832,16 @@ public class VFilterSelect extends Composite implements Field, KeyDownHandler,
         if (enableDebug) {
             debug("VFS: onKeyUp(" + event.getNativeKeyCode() + ")");
         }
+        tbTimer.cancel();
         if (enabled && !readonly) {
             switch (event.getNativeKeyCode()) {
             case KeyCodes.KEY_ENTER:
+                if (isTextToFilter()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    filterOptions(currentPage);
+                }
+                break;
             case KeyCodes.KEY_TAB:
             case KeyCodes.KEY_SHIFT:
             case KeyCodes.KEY_CTRL:
@@ -1861,12 +1854,21 @@ public class VFilterSelect extends Composite implements Field, KeyDownHandler,
                 // NOP
                 break;
             default:
-                if (textInputEnabled) {
-                    filterOptions(currentPage);
-                }
+                tbTimer.schedule(500);
                 break;
             }
         }
+    }
+
+    protected boolean isTextToFilter() {
+        boolean isTextToFilter = textInputEnabled
+                && tb.getText().length() > 0
+                && (currentSuggestion == null || !tb.getText().equals(
+                        currentSuggestion.getReplacementString()));
+        if (enableDebug) {
+            debug("isTextToFilter: " + isTextToFilter);
+        }
+        return isTextToFilter;
     }
 
     /**
@@ -2278,6 +2280,12 @@ public class VFilterSelect extends Composite implements Field, KeyDownHandler,
         // Then set your specific selection type only after
         // client.updateVariable() method call.
         selectPopupItemWhenResponseIsReceived = Select.NONE;
+    }
+
+    protected void runFilterAction() {
+        if (textInputEnabled) {
+            filterOptions(currentPage);
+        }
     }
 
 }

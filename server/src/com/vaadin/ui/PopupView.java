@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
 
+import com.vaadin.shared.ui.popupview.PopupPosition;
 import com.vaadin.shared.ui.popupview.PopupViewServerRpc;
 import com.vaadin.shared.ui.popupview.PopupViewState;
 
@@ -235,6 +236,14 @@ public class PopupView extends AbstractComponent implements HasComponents {
     @Override
     protected PopupViewState getState() {
         return (PopupViewState) super.getState();
+    }
+
+    public PopupPosition getPopupPosition() {
+        return getState().popupPosition;
+    }
+
+    public void setPopupPosition(PopupPosition popupPosition) {
+        getState().popupPosition = popupPosition;
     }
 
     @Override

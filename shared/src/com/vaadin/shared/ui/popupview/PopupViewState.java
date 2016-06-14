@@ -21,5 +21,6 @@ public class PopupViewState extends AbstractComponentState {
 
     public String html;
     public boolean hideOnMouseOut;
+    public PopupPosition popupPosition = PopupPosition.CENTER;
 
 }

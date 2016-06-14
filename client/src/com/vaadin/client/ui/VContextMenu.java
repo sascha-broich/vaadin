@@ -20,6 +20,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -154,18 +155,53 @@ public class VContextMenu extends VOverlay implements SubPartAware {
                 offsetWidth = menu.getOffsetWidth();
                 int left = VContextMenu.this.left;
                 int top = VContextMenu.this.top;
-                if (offsetWidth + left > Window.getClientWidth()) {
+                int clientWidth = Window.getClientWidth();
+                int clientHeight = Window.getClientHeight();
+
+                int maxHeight = -1;
+                int maxWidth = -1;
+
+                Element elem = getElement();
+
+                if (offsetWidth + left > clientWidth) {
                     left = left - offsetWidth;
                     if (left < 0) {
                         left = 0;
                     }
+                    if (offsetWidth + top > clientWidth) {
+                        maxWidth = clientWidth - top;
+                    }
                 }
-                if (offsetHeight + top > Window.getClientHeight()) {
-                    top = Math.max(0, Window.getClientHeight() - offsetHeight);
+                if (offsetHeight + top > clientHeight) {
+                    top = top - offsetHeight;
+                    if (top < 0) {
+                        top = 0;
+
+                        setHeight(Window.getClientHeight() + "px");
+                    }
+                    if (offsetHeight + top > clientHeight) {
+                        maxHeight = clientHeight - top;
+                    }
                 }
-                if (top == 0) {
-                    setHeight(Window.getClientHeight() + "px");
+
+                if (maxWidth > 0) {
+                    elem.getStyle().setProperty("maxWidth", maxWidth + "px");
+                } else {
+                    elem.getStyle().clearProperty("maxWidth");
                 }
+
+                if (maxHeight > 0) {
+                    elem.getStyle().setProperty("maxHeight", maxHeight + "px");
+                } else {
+                    elem.getStyle().clearProperty("maxHeight");
+                }
+
+                if (maxWidth > 0 || maxHeight > 0) {
+                    elem.getStyle().setOverflow(Overflow.AUTO);
+                } else {
+                    elem.getStyle().setOverflow(Overflow.VISIBLE);
+                }
+
                 setPopupPosition(left, top);
 
                 /*

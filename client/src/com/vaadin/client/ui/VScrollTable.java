@@ -16,89 +16,36 @@
 
 package com.vaadin.client.ui;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
-import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.dom.client.TableSectionElement;
-import com.google.gwt.dom.client.Touch;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.ScrollEvent;
-import com.google.gwt.event.dom.client.ScrollHandler;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.*;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.UIObject;
-import com.google.gwt.user.client.ui.Widget;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.BrowserInfo;
-import com.vaadin.client.ComponentConnector;
-import com.vaadin.client.ConnectorMap;
-import com.vaadin.client.DeferredWorker;
+import com.google.gwt.user.client.ui.*;
+import com.vaadin.client.*;
 import com.vaadin.client.Focusable;
-import com.vaadin.client.MouseEventDetailsBuilder;
-import com.vaadin.client.StyleConstants;
-import com.vaadin.client.TooltipInfo;
-import com.vaadin.client.UIDL;
-import com.vaadin.client.Util;
-import com.vaadin.client.VConsole;
-import com.vaadin.client.VTooltip;
 import com.vaadin.client.ui.VScrollTable.VScrollTableBody.VScrollTableRow;
-import com.vaadin.client.ui.dd.DDUtil;
-import com.vaadin.client.ui.dd.VAbstractDropHandler;
-import com.vaadin.client.ui.dd.VAcceptCallback;
-import com.vaadin.client.ui.dd.VDragAndDropManager;
-import com.vaadin.client.ui.dd.VDragEvent;
-import com.vaadin.client.ui.dd.VHasDropHandler;
-import com.vaadin.client.ui.dd.VTransferable;
+import com.vaadin.client.ui.dd.*;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.dd.VerticalDropLocation;
@@ -1386,7 +1333,6 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
     }
 
     private ScheduledCommand lazyScroller = new ScheduledCommand() {
-
         @Override
         public void execute() {
             if (firstvisible >= 0) {
@@ -1641,8 +1587,12 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
             } else {
                 actionMap.remove(key + "_i");
             }
+            if (action.hasAttribute("style")) {
+                actionMap.put(key + "_s", action.getStringAttribute("style"));
+            } else {
+                actionMap.remove(key + "_s");
+            }
         }
-
     }
 
     public String getActionCaption(String actionKey) {
@@ -1651,6 +1601,10 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
 
     public String getActionIcon(String actionKey) {
         return actionMap.get(actionKey + "_i");
+    }
+
+    public String getActionStyle(String actionKey) {
+        return actionMap.get(actionKey + "_s");
     }
 
     private void updateHeader(String[] strings) {
@@ -3370,7 +3324,7 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
         }
 
         /**
-         *
+         * 
          * @param columnIndex
          * @since 7.3.9
          */
@@ -3968,7 +3922,7 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
                     cols[i++] = it.next();
                 }
             }
-            final Action[] actions = new Action[cols.length];
+            List<Action> actions = new ArrayList<Action>(cols.length);
 
             for (int i = 0; i < cols.length; i++) {
                 final String cid = (String) cols[i];
@@ -3981,10 +3935,11 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
                 }
                 if (noncollapsibleColumns.contains(cid)) {
                     a.setNoncollapsible(true);
+                    continue;
                 }
-                actions[i] = a;
+                actions.add(a);
             }
-            return actions;
+            return actions.toArray(new Action[actions.size()]);
         }
 
         @Override
@@ -4311,7 +4266,7 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
         }
 
         /**
-         *
+         * 
          * @param columnIndex
          * @since 7.3.9
          */
@@ -6552,6 +6507,7 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
                     };
                     a.setCaption(getActionCaption(actionKey));
                     a.setIconUrl(getActionIcon(actionKey));
+                    a.setStyleName(getActionStyle(actionKey));
                     actions[i] = a;
                 }
                 return actions;
@@ -7246,7 +7202,6 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
      * This method has logic which rows needs to be requested from server when
      * user scrolls
      */
-
     @Override
     public void onScroll(ScrollEvent event) {
         // Do not handle scroll events while there is scroll initiated from
@@ -8094,6 +8049,7 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
             Action bodyAction = new TreeAction(this, null, actionKey);
             bodyAction.setCaption(getActionCaption(actionKey));
             bodyAction.setIconUrl(getActionIcon(actionKey));
+            bodyAction.setStyleName(getActionStyle(actionKey));
             actions[i] = bodyAction;
         }
         return actions;

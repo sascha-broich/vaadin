@@ -37,6 +37,7 @@ import com.vaadin.ui.PopupView;
 @Connect(PopupView.class)
 public class PopupViewConnector extends AbstractHasComponentsConnector
         implements PostLayoutListener, VisibilityChangeHandler {
+    private static final long serialVersionUID = 1L;
 
     private boolean centerAfterLayout = false;
 
@@ -45,6 +46,7 @@ public class PopupViewConnector extends AbstractHasComponentsConnector
     @Override
     protected void init() {
         super.init();
+        getWidget().client = getConnection();
 
         handlerRegistration.add(getWidget().addVisibilityChangeHandler(this));
     }
@@ -55,6 +57,8 @@ public class PopupViewConnector extends AbstractHasComponentsConnector
 
         getWidget().setHTML(getState().html);
         getWidget().popup.setHideOnMouseOut(getState().hideOnMouseOut);
+        getWidget().setPopupPosition(getState().popupPosition);
+        getWidget().popup.positionOrSizeUpdated();
     }
 
     @Override

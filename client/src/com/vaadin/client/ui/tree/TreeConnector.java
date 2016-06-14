@@ -46,11 +46,6 @@ public class TreeConnector extends AbstractComponentConnector implements
     protected final Map<TreeNode, TooltipInfo> tooltipMap = new HashMap<TreeNode, TooltipInfo>();
 
     @Override
-    protected void init() {
-        getWidget().connector = this;
-    }
-
-    @Override
     public void updateFromUIDL(UIDL uidl, ApplicationConnection client) {
         if (!isRealUpdate(uidl)) {
             return;
@@ -142,7 +137,6 @@ public class TreeConnector extends AbstractComponentConnector implements
             getWidget().lastSelection = getWidget().getNodeByKey(
                     getWidget().lastSelection.key);
         }
-
         if (getWidget().focusedNode != null) {
 
             Set<String> selectedIds = getWidget().selectedIds;
@@ -231,7 +225,12 @@ public class TreeConnector extends AbstractComponentConnector implements
                         .translateVaadinUri(
                                 action.getStringAttribute(TreeConstants.ATTRIBUTE_ACTION_ICON));
             }
-            getWidget().registerAction(key, caption, iconUrl);
+            String style = null;
+            if (action.hasAttribute(TreeConstants.ATTRIBUTE_ACTION_STYLE)) {
+                style = action
+                        .getStringAttribute(TreeConstants.ATTRIBUTE_ACTION_STYLE);
+            }
+            getWidget().registerAction(key, caption, iconUrl, style);
         }
 
     }

@@ -21,4 +21,6 @@ public class ImageState extends AbstractEmbeddedState {
     {
         primaryStyleName = "v-image";
     }
+
+    public boolean hasClickListener;
 }

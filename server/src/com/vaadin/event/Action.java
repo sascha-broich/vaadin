@@ -42,6 +42,11 @@ public class Action implements Serializable {
     private Resource icon = null;
 
     /**
+     * Action style
+     */
+    private String styleName = null;
+
+    /**
      * Constructs a new action with the given caption.
      * 
      * @param caption
@@ -196,6 +201,26 @@ public class Action implements Serializable {
      */
     public void setIcon(Resource icon) {
         this.icon = icon;
+    }
+
+    /**
+     * Returns the action's style class name
+     * 
+     * @return the action's style class name
+     */
+
+    public String getStyleName() {
+        return styleName;
+    }
+
+    /**
+     * Sets the style class name
+     * 
+     * @param styleName
+     *            the style class name to set
+     */
+    public void setStyleName(String styleName) {
+        this.styleName = styleName;
     }
 
 }

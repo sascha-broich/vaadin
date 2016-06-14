@@ -32,11 +32,15 @@
     </target>
 
     <target name="default-widgetset">
+    	<delete>
+    		<fileset dir="D:/workspace/git/vaadin/client-compiled/result/VAADIN/widgetsets/../gwt-unitCache">
+    			<include name="*"/>
+    		</fileset>
+    	</delete>
         <antcall target="compile-module">
             <param name="module" value="com.vaadin.DefaultWidgetSet" />
         </antcall>
     </target>
-
 
     <target name="compile-module-cache">
         <fail unless="module" message="You must give the module to compile in the 'module' parameter" />
@@ -69,6 +73,8 @@
         <mkdir dir="${module.output.dir}" />
 
         <echo>Compiling ${module} to ${module.output.dir}</echo>
+    	<echo>classpathref: ${toString:classpath.compile.widgetset}</echo>
+    	<echo>classpat: ${compiled-cache.jar}</echo>
 
         <!-- compile the module -->
         <java classname="com.google.gwt.dev.Compiler" classpathref="classpath.compile.widgetset" failonerror="yes" fork="yes" maxmemory="512m">
@@ -95,6 +101,7 @@
             <jvmarg value="-Xss8M" />
             <jvmarg value="-XX:MaxPermSize=256M" />
             <jvmarg value="-Djava.awt.headless=true" />
+        	<jvmarg value="-Dgwt.usearchives=false" />
         </java>
 
     </target>

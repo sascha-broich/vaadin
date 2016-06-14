@@ -29,6 +29,8 @@ public abstract class Action implements Command {
 
     protected String caption = "";
 
+    protected String styleName = null;
+
     public Action(ActionOwner owner) {
         this.owner = owner;
     }
@@ -41,7 +43,11 @@ public abstract class Action implements Command {
 
     public String getHTML() {
         final StringBuffer sb = new StringBuffer();
-        sb.append("<div>");
+        sb.append("<div");
+        if (styleName != null) {
+            sb.append(" class=\"").append(styleName).append("\"");
+        }
+        sb.append(">");
         // Could store the icon in a field instead, but it doesn't really matter
         // right now because Actions are recreated every time they are needed
         Icon icon = owner.getClient().getIcon(getIconUrl());
@@ -78,6 +84,14 @@ public abstract class Action implements Command {
     @Override
     public String toString() {
         return "Action [owner=" + owner + ", iconUrl=" + iconUrl + ", caption="
-                + caption + "]";
+                + caption + ", styleName=" + styleName + "]";
+    }
+
+    public String getStyleName() {
+        return styleName;
+    }
+
+    public void setStyleName(String styleName) {
+        this.styleName = styleName;
     }
 }
