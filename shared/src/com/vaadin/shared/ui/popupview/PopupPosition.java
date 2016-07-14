@@ -24,5 +24,5 @@ package com.vaadin.shared.ui.popupview;
  */
 public enum PopupPosition {
 
-    CENTER, COVER, BELOW, RIGHT,
+    CENTER, COVER, BELOW, RIGHT, LEFT,
 }

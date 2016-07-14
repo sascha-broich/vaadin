@@ -248,6 +248,7 @@
         <fail unless="bundle-vendor" message="No bundle-vendor parameter given" />
 
         <property name="bundle-manifestversion" value="2" />
+    	<echo>${java.home}</echo>
 
         <jar file="${jar}" update="true">
             <manifest>

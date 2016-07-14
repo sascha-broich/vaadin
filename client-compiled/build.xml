@@ -32,7 +32,7 @@
     </target>
 
     <target name="default-widgetset">
-    	<delete>
+    	<delete failonerror="false">
     		<fileset dir="D:/workspace/git/vaadin/client-compiled/result/VAADIN/widgetsets/../gwt-unitCache">
     			<include name="*"/>
     		</fileset>

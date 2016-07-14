@@ -172,6 +172,11 @@ public class VPopupView extends HTML implements HasEnabled, Iterable<Widget>,
             top = VPopupView.this.getAbsoluteTop();
         }
             break;
+        case LEFT: {
+            left = VPopupView.this.getAbsoluteLeft() - offsetWidth;
+            top = VPopupView.this.getAbsoluteTop();
+        }
+            break;
         }
 
         // Don't show the popup outside the screen.
